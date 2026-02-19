@@ -830,6 +830,7 @@ module vision 'br/public:avm/res/cognitive-services/account:0.7.2' = if (useMult
     customSubDomainName: !empty(visionServiceName)
       ? visionServiceName
       : '${abbrs.cognitiveServicesVision}${resourceToken}'
+    disableLocalAuth: true
     location: visionResourceGroupLocation
     tags: tags
     sku: 'S0'
@@ -851,6 +852,7 @@ module contentUnderstanding 'br/public:avm/res/cognitive-services/account:0.7.2'
     customSubDomainName: !empty(contentUnderstandingServiceName)
       ? contentUnderstandingServiceName
       : '${abbrs.cognitiveServicesContentUnderstanding}${resourceToken}'
+    disableLocalAuth: true
     // Hard-coding to westus for now, due to limited availability and no overlap with Document Intelligence
     location: 'westus'
     tags: tags
@@ -870,6 +872,7 @@ module speech 'br/public:avm/res/cognitive-services/account:0.7.2' = if (useSpee
     customSubDomainName: !empty(speechServiceName)
       ? speechServiceName
       : '${abbrs.cognitiveServicesSpeech}${resourceToken}'
+    disableLocalAuth: true
     location: !empty(speechServiceLocation) ? speechServiceLocation : location
     tags: tags
     sku: speechServiceSkuName
@@ -1491,6 +1494,19 @@ module searchContribRoleBackend 'core/security/role.bicep' = if (useUserUpload) 
       ? backend!.outputs.identityPrincipalId
       : acaBackend!.outputs.identityPrincipalId
     roleDefinitionId: '8ebe5a00-799e-43f5-93ac-243d3dce84a7'
+    principalType: 'ServicePrincipal'
+  }
+}
+
+// For Azure AI Content Understanding access by the backend
+module contentUnderstandingRoleBackend 'core/security/role.bicep' = if (useMediaDescriberAzureCU) {
+  scope: contentUnderstandingResourceGroup
+  name: 'contentunderstanding-role-backend'
+  params: {
+    principalId: (deploymentTarget == 'appservice')
+      ? backend!.outputs.identityPrincipalId
+      : acaBackend!.outputs.identityPrincipalId
+    roleDefinitionId: 'a97b65f3-24c7-4388-baec-2e87135dc908' // Cognitive Services User
     principalType: 'ServicePrincipal'
   }
 }
